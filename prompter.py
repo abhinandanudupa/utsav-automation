@@ -21,7 +21,6 @@ def prompt_chatgpt(event_prompt):
                 "content": event_prompt
             }]
         )
-    pprint(completion.choices)
     return completion.choices[0].message.content
 
 
@@ -70,6 +69,7 @@ def generate_invitation_prompts(events):
 def generate_event_invitation_reply(event_zipped):
     event_replies = []
     event, prompts = event_zipped
+    print(event['eventName'])
     for prompt in prompts:
         event_replies.append(prompt_chatgpt(prompt))
 

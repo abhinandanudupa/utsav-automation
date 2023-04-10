@@ -56,7 +56,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--input-folder',
         type=str,
-        default='./Events_Test/'
+        default='./Events/'
     )  # positional argument
 
     parser.add_argument(
