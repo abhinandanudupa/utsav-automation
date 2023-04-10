@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     events = parse_all_files_in_folder(arguments['input_folder'])
     csv_parsing.save_inputs(arguments['parsed_json'], events)
-    print(f'Parsed data stored in {arguments["parsed_json"]}')
+    print(f'Parsed data stored in {arguments["parsed_json"]}.')
 
     # PROMPTS
     if not arguments['prompts']:
@@ -129,6 +129,7 @@ if __name__ == '__main__':
             })
             prompt_data.append(data)
     csv_parsing.save_as_csv(arguments['prompts_file'], prompt_data)
+    print(f"Prompt data stored in {arguments['prompts_file']}.")
 
     # REPLIES
     if not arguments['replies']:
@@ -152,6 +153,7 @@ if __name__ == '__main__':
             })
             reply_data.append(data)
     csv_parsing.save_as_csv(arguments['raw_replies_file'], reply_data)
+    print(f"Raw replies stored in {arguments['raw_replies_file']}.")
 
     # EMAILS
     if not arguments['emails']:
@@ -169,6 +171,7 @@ if __name__ == '__main__':
             })
             email_data.append(data)
     csv_parsing.save_as_csv(arguments['emails_file'], email_data)
+    print(f"Emails stored in {arguments['emails_file']}.")
 
     # for event, zipped in events_n_emails_zipped:
     #     pprint(zipped)
