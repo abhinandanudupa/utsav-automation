@@ -2,6 +2,7 @@
 
 from dotenv import dotenv_values
 from copy import deepcopy
+from abc import ABC, abstractmethod
 import openai
 
 config = dotenv_values(".env")
@@ -11,7 +12,7 @@ openai.api_key = OPEN_AI_KEY
 UTSAV_STUFF = "Utsav Intro"
 
 
-class BaseGenerator:
+class BaseGenerator(ABC):
     def __init__(self, event_list, openai_configured_lib=openai):
         self.event_list = event_list
         self.openai_configured_lib = openai_configured_lib
@@ -32,6 +33,7 @@ class BaseGenerator:
         return completion.choices[0].message.content
 
     # To be overloaded
+    @abstractmethod
     def generate_prompts_for_event(self, event):
         # club_name = event['club']
         # event_name = event['eventName']
@@ -46,18 +48,18 @@ class BaseGenerator:
         prompt = F"PROMPT FORMAT"
         return [prompt]
 
-    def generate_reply_for_event(self, event):
-        print(event['eventName'])
-        prompts = self.generate_prompts_for_event(event)
-        self.all_prompts.append(prompts)
+    def generate_replies_for_event(self, event):
+        self.generate_prompts_for_event(event)
+        prompts = self.all_prompts[-1]
+        print(F"Prompting ChatGPT for {event['eventName']}")
 
         event_replies = []
         for prompt in prompts:
             event_replies.append(self.prompt_chatgpt(prompt))
         self.all_replies.append(event_replies)
-        return event_replies
 
     # To be overloaded
+    @abstractmethod
     def generate_emails_for_event(self, event, event_replies):
         # club_name = event['club']
         # event_name = event['eventName']
@@ -74,18 +76,16 @@ class BaseGenerator:
         for something in zip([event], event_replies):
             email = F"""#### {UTSAV_STUFF} #### {something} """
             event_emails.append(email)
-        return event_emails
+        self.all_emails.append(event_emails)
 
     def generate_replies_for_all_events(self):
         for event in self.event_list:
-            print(F"Getting reply from ChatGPT for {event['eventName']}")
-            self.generate_reply_for_event(event)
+            self.generate_replies_for_event(event)
 
     def generate_emails_for_all_events(self):
         for event, event_replies in zip(self.event_list, self.all_replies):
             print(F"Generating emails for {event['eventName']}")
-            emails = self.generate_emails_for_event(event, event_replies)
-            self.all_emails.append(emails)
+            self.generate_emails_for_event(event, event_replies)
 
     @staticmethod
     def get_relevant_data_from_event(event_dict):
@@ -153,16 +153,12 @@ class BaseGenerator:
 
 class InvitationGenerator(BaseGenerator):
     def generate_prompts_for_event(self, event):
+        print(F"Generating prompts for {event['eventName']}")
         club_name = event['club']
         event_name = event['eventName']
-        # mode_of_conduction = event["eventMode"]
-        # venue = event['venue']
-        # timings = event['eventDate']
         description = event['description']
         rules = event['rules']
-        # category_info = [("competition", "judge")]
         role = 'Please note that he/she is the judge for the event'
-        # coordinators = event['coordinators']
 
         prompts = []
         for judge in event['resourcePerson']:
@@ -180,13 +176,11 @@ Rules:
 Describe the event - {event_name} in 1 to 3 sentences. Write a short paragraph addressed to {judge['name']} on behalf 
 of the club - {club_name} describing how her/his experience as {judge['role']} will be useful to the event the above 
 event - {event_name}. {role}. The paragraph should not be more than 4 sentences.
-            """
+"""
             prompts.append(prompt)
-
-        return prompts
+        self.all_prompts.append(prompts)
 
     def generate_emails_for_event(self, event, event_replies):
-        print(F"Generating emails for {event['eventName']}")
         club_name = event['club']
         event_name = event['eventName']
         mode_of_conduction = event["eventMode"]
@@ -217,4 +211,4 @@ The event will be conducted in {mode_of_conduction} mode from {timings} the {ven
 {coordinators[1]['phone']}
 """
             event_emails.append(email)
-        return event_emails
+        self.all_emails.append(event_emails)

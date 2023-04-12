@@ -83,10 +83,10 @@ if __name__ == '__main__':
     # pprint(invites.all_replies)
     # pprint(invites.all_emails)
     prompts, replies, emails = invites.zip_n_store_as_dict(
-        convert_prompts=['prompts'],
-        convert_replies=['replies'],
-        convert_emails=['emails']
+        convert_prompts=arguments['prompts'],
+        convert_replies=arguments['replies'],
+        convert_emails=arguments['emails']
     )
-    csv_parser.save_as_csv(prompts)
-    csv_parser.save_as_csv(replies)
-    csv_parser.save_as_csv(emails)
+    csv_parser.save_as_csv(prompts, arguments['prompts_file'])
+    csv_parser.save_as_csv(replies, arguments['raw_replies_file'])
+    csv_parser.save_as_csv(emails, arguments['emails_file'])

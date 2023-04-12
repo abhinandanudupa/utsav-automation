@@ -136,11 +136,12 @@ class CSVParser:
         with open(self.parsed_inputs_file, "w") as parsed_file:
             parsed_file.write(json.dumps(event_list))
 
-    def save_as_csv(self, rows):
+    @staticmethod
+    def save_as_csv(rows, file_name):
         if len(rows) == 0:
             print("No items to save!")
             return
-        with open(self.output_file, 'w') as file:
+        with open(file_name, 'w') as file:
             writer = csv.DictWriter(file, fieldnames=rows[0].keys())
             writer.writeheader()
             writer.writerows(rows)
