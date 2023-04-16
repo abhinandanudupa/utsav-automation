@@ -1,29 +1,25 @@
 #! /usr/bin/env python3
 
-from dotenv import dotenv_values
 from copy import deepcopy
 from abc import ABC, abstractmethod
 import openai
 
-config = dotenv_values(".env")
-OPEN_AI_KEY = config["OPEN_AI_KEY"]
-openai.api_key = OPEN_AI_KEY
-
-UTSAV_STUFF = "Utsav Intro"
+UTSAV_INTRO = "Utsav Intro"
 
 
 class BaseGenerator(ABC):
-    def __init__(self, event_list, openai_configured_lib=openai):
+    def __init__(self, event_list, openai_api_key=None):
         self.event_list = event_list
-        self.openai_configured_lib = openai_configured_lib
+        openai.api_key = openai_api_key
         self.all_prompts = []
         self.all_replies = []
         self.all_emails = []
         self.event_relevant_data = []
         self.extract_relevant_data()
 
-    def prompt_chatgpt(self, prompt):
-        completion = self.openai_configured_lib.ChatCompletion.create(
+    @staticmethod
+    def prompt_chatgpt(prompt):
+        completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[{
                 "role": "user",
@@ -48,14 +44,18 @@ class BaseGenerator(ABC):
         prompt = F"PROMPT FORMAT"
         return [prompt]
 
-    def generate_replies_for_event(self, event):
-        self.generate_prompts_for_event(event)
-        prompts = self.all_prompts[-1]
+    def get_replies_for_event(self, event, event_prompts):
         print(F"Prompting ChatGPT for {event['eventName']}")
-
         event_replies = []
-        for prompt in prompts:
-            event_replies.append(self.prompt_chatgpt(prompt))
+        for i, prompt in enumerate(event_prompts):
+            try:
+                reply = self.prompt_chatgpt(prompt)
+                event_replies.append(reply)
+            except:
+                print("Failed to get a reply from ChatGPT!")
+                print(F"""Was requesting for {event['eventName']} and for the judge {event['resourcePerson'][i]}.""")
+        if len(event_replies):
+            print(F"All requests for {event['eventName']} have failed.")
         self.all_replies.append(event_replies)
 
     # To be overloaded
@@ -72,15 +72,20 @@ class BaseGenerator(ABC):
         # role = 'Please note that he/she is the judge for the event'
         # coordinators = event['coordinators']
         event_emails = []
-        # INFO: do what ever you want
-        for something in zip([event], event_replies):
-            email = F"""#### {UTSAV_STUFF} #### {something} """
+        # INFO: Iterate through the replies to generate emails
+        for something in event_replies:
+            email = F"""#### {UTSAV_INTRO} #### {something} """
             event_emails.append(email)
+        # INFO: Make sure you update the all_emails variable
         self.all_emails.append(event_emails)
 
-    def generate_replies_for_all_events(self):
+    def generate_prompts_for_all_events(self):
         for event in self.event_list:
-            self.generate_replies_for_event(event)
+            self.generate_prompts_for_event(event)
+
+    def get_replies_for_all_events(self):
+        for event, event_prompts in zip(self.event_list, self.all_prompts):
+            self.get_replies_for_event(event, event_prompts)
 
     def generate_emails_for_all_events(self):
         for event, event_replies in zip(self.event_list, self.all_replies):
@@ -194,7 +199,7 @@ event - {event_name}. {role}. The paragraph should not be more than 4 sentences.
         event_emails = []
         for judge, reply in zip(event['resourcePerson'], event_replies):
             email = F"""
-#### {UTSAV_STUFF} ####
+#### {UTSAV_INTRO} ####
 
 We are delighted to invite you to judge the event {event_name} on behalf of the club - {club_name}. 
 The event will be conducted in {mode_of_conduction} mode from {timings} the {venue}.

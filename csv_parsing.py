@@ -89,7 +89,7 @@ class CSVParser:
         return False
 
     @staticmethod
-    def is_json_obj(field_name):
+    def is_json_object(field_name):
         if field_name in CSVParser.JSON_FIELDS:
             return True
         return False
@@ -112,7 +112,7 @@ class CSVParser:
                 events_parsed.append({})
                 for key in row:
                     if not CSVParser.ignore_fields(key):
-                        if CSVParser.is_json_obj(key):
+                        if CSVParser.is_json_object(key):
                             events_parsed[-1].update(
                                 {key: json.loads(row[key])}
                             )

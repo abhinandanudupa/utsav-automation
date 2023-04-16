@@ -2,9 +2,12 @@
 
 import sys
 import argparse
+from dotenv import dotenv_values
 from generators import InvitationGenerator
 from csv_parsing import CSVParser
 from pprint import pprint
+config = dotenv_values(".env")
+OPEN_AI_KEY = config["OPEN_AI_KEY"]
 
 
 if __name__ == '__main__':
@@ -77,8 +80,9 @@ if __name__ == '__main__':
     # pprint(events)
     csv_parser.save_inputs_as_json(events)
 
-    invites = InvitationGenerator(events)
-    invites.generate_replies_for_all_events()
+    invites = InvitationGenerator(events, OPEN_AI_KEY)
+    invites.generate_prompts_for_all_events()
+    invites.get_replies_for_all_events()
     invites.generate_emails_for_all_events()
     # pprint(invites.all_replies)
     # pprint(invites.all_emails)
