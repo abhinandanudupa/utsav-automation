@@ -81,9 +81,14 @@ if __name__ == '__main__':
     csv_parser.save_inputs_as_json(events)
 
     invites = InvitationGenerator(events, OPEN_AI_KEY)
-    invites.generate_prompts_for_all_events()
-    invites.get_replies_for_all_events()
-    invites.generate_emails_for_all_events()
+
+    if arguments['prompts']:
+        invites.generate_prompts_for_all_events()
+
+    if arguments['replies']:
+        invites.get_replies_for_all_events()
+        if arguments['emails']:
+            invites.generate_emails_for_all_events()
     # pprint(invites.all_replies)
     # pprint(invites.all_emails)
     prompts, replies, emails = invites.zip_n_store_as_dict(
@@ -91,6 +96,12 @@ if __name__ == '__main__':
         convert_replies=arguments['replies'],
         convert_emails=arguments['emails']
     )
+
+    print("Saving prompts...")
     csv_parser.save_as_csv(prompts, arguments['prompts_file'])
+
+    print("Saving replies...")
     csv_parser.save_as_csv(replies, arguments['raw_replies_file'])
+
+    print("Saving emails...")
     csv_parser.save_as_csv(emails, arguments['emails_file'])
