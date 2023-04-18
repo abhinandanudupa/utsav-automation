@@ -3,6 +3,7 @@
 from copy import deepcopy
 from abc import ABC, abstractmethod
 import openai
+import traceback
 
 UTSAV_INTRO = "Utsav Intro"
 
@@ -54,13 +55,15 @@ class BaseGenerator(ABC):
             except:
                 print("Failed to get a reply from ChatGPT!")
                 print(F"""Was requesting for {event['eventName']} and for the judge {event['resourcePerson'][i]}.""")
+                traceback.print_exc()
+
         if len(event_replies):
             print(F"All requests for {event['eventName']} have failed.")
         self.all_replies.append(event_replies)
 
     # To be overloaded
     @abstractmethod
-    def generate_emails_for_event(self, event, event_replies):
+    def generate_formatted_outputs_for_event(self, event, event_replies):
         # club_name = event['club']
         # event_name = event['eventName']
         # mode_of_conduction = event["eventMode"]
@@ -87,10 +90,10 @@ class BaseGenerator(ABC):
         for event, event_prompts in zip(self.event_list, self.all_prompts):
             self.get_replies_for_event(event, event_prompts)
 
-    def generate_emails_for_all_events(self):
+    def generate_formatted_outputs_for_all_events(self):
         for event, event_replies in zip(self.event_list, self.all_replies):
             print(F"Generating emails for {event['eventName']}")
-            self.generate_emails_for_event(event, event_replies)
+            self.generate_formatted_outputs_for_event(event, event_replies)
 
     @staticmethod
     def get_relevant_data_from_event(event_dict):
@@ -185,7 +188,7 @@ event - {event_name}. {role}. The paragraph should not be more than 4 sentences.
             prompts.append(prompt)
         self.all_prompts.append(prompts)
 
-    def generate_emails_for_event(self, event, event_replies):
+    def generate_formatted_outputs_for_event(self, event, event_replies):
         club_name = event['club']
         event_name = event['eventName']
         mode_of_conduction = event["eventMode"]

@@ -88,7 +88,7 @@ if __name__ == '__main__':
     if arguments['replies']:
         invites.get_replies_for_all_events()
         if arguments['emails']:
-            invites.generate_emails_for_all_events()
+            invites.generate_formatted_outputs_for_all_events()
     # pprint(invites.all_replies)
     # pprint(invites.all_emails)
     prompts, replies, emails = invites.zip_n_store_as_dict(
