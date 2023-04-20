@@ -1,2 +1,7 @@
 .env
 .idea
+
+Events/
+Events_Test/
+Old/
+__pycache__/
