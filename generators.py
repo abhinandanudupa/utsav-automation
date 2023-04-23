@@ -14,7 +14,7 @@ class BaseGenerator(ABC):
         openai.api_key = openai_api_key
         self.all_prompts = []
         self.all_replies = []
-        self.all_emails = []
+        self.all_outputs = []
         self.event_relevant_data = []
         self.extract_relevant_data()
 
@@ -80,7 +80,7 @@ class BaseGenerator(ABC):
             email = F"""#### {UTSAV_INTRO} #### {something} """
             event_emails.append(email)
         # INFO: Make sure you update the all_emails variable
-        self.all_emails.append(event_emails)
+        self.all_outputs.append(event_emails)
 
     def generate_prompts_for_all_events(self):
         for event in self.event_list:
@@ -144,7 +144,7 @@ class BaseGenerator(ABC):
                     reply_data.append(data)
 
         if convert_emails:
-            events_n_emails = zip(self.event_list, self.all_emails)
+            events_n_emails = zip(self.event_list, self.all_outputs)
             for i, (event, emails) in enumerate(events_n_emails):
                 for email, rp_details in zip(emails, event['resourcePerson']):
                     rp_name = rp_details['name']
@@ -171,7 +171,7 @@ class InvitationGenerator(BaseGenerator):
         prompts = []
         for judge in event['resourcePerson']:
             prompt = F"""
-With the description below:
+With this description of the competition below:
 Event Name: {event_name}
 
 Description:
@@ -181,9 +181,19 @@ Rules:
 {rules}
 
 
-Describe the event - {event_name} in 1 to 3 sentences. Write a short paragraph addressed to {judge['name']} on behalf 
-of the club - {club_name} describing how her/his experience as {judge['role']} will be useful to the event the above 
-event - {event_name}. {role}. The paragraph should not be more than 4 sentences.
+You are a an invitation letter writing AI. You task is to write emails to judges inviting them to the event mentioned above which is a part of a college cultural fest.
+
+Write the following two paragraphs for a letter:
+Write a very short one sentence introduction to the event above with the given information, conveying the essence of the game.
+
+Follow it up with a short paragraph, addressed to {judge['name']}, {judge['role']}, inviting him/her to judge this competition on behalf of the {club_name} by stating the name, venue, timings with full date of the competition from above. State how her experience as a {judge['role']} will be useful for judging this competition.
+
+These are the requirements:
+
+- Please make it formal and appealing to the reader and note that the text you output will be a part of an partially complete email.
+- Be explicit that you are inviting on behalf of the club.
+- She has confirmed her presence for the event.
+- Each paragraph must not be more than 3 sentences.
 """
             prompts.append(prompt)
         self.all_prompts.append(prompts)
@@ -219,4 +229,9 @@ The event will be conducted in {mode_of_conduction} mode from {timings} the {ven
 {coordinators[1]['phone']}
 """
             event_emails.append(email)
-        self.all_emails.append(event_emails)
+        self.all_outputs.append(event_emails)
+
+
+class RulesGenerator(BaseGenerator):
+    def generate_prompts_for_event(self, event):
+        print(F"Generating prompts for {event['eventName']}")
