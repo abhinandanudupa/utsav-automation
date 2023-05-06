@@ -1,7 +1,8 @@
-.env
-.idea
+ChatGPT/.env
+ChatGPT/.idea
 
-Events/
-Events_Test/
-Old/
-__pycache__/
+
+ChatGPT/Events/
+ChatGPT/Events_Test/
+ChatGPT/Old/
+ChatGPT/__pycache__/
