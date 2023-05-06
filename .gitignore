@@ -4,5 +4,16 @@ ChatGPT/.idea
 
 ChatGPT/Events/
 ChatGPT/Events_Test/
+ChatGPT/*.csv
+
 ChatGPT/Old/
 ChatGPT/__pycache__/
+
+Docs/*.docx
+Docs/*.csv
+
+Docs/node_modules
+Docs/.vscode
+
+Docs/sponsorship_packages.js
+Docs/generate_mou.js
