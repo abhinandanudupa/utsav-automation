@@ -66,7 +66,7 @@ const generateMoUsForCompanies = function (companies) {
   for (const companyObj of companies) {
     const fileName = `${padSerial(companyObj.serial)}-MoU-${
       companyObj.clubName
-    }-${companyObj.companyName}.docx`.replace(' ', '_');
+    }-${companyObj.companyName}.docx`.replaceAll(' ', '_');
     const doc = generateMoUForCompany(companyObj);
     documents.push({ fileName, doc });
   }
