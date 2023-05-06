@@ -96,7 +96,7 @@ const numberToWords = function (num) {
     }
   }
 
-  return words;
+  return words.trim();
 };
 
 const numberSuffix = function (number) {
@@ -162,11 +162,37 @@ const padSerial = function (serial) {
   return num;
 };
 
+const generateAlias = function (companyFullName) {
+  const wordsInName = companyFullName.split(' ');
+  if (wordsInName.length <= 1) {
+    return companyFullName;
+  }
+
+  const filtered = wordsInName.filter((word) => {
+    return !word.match(/^inc\.?|pte\.?|ltd\.?$/gi);
+  });
+
+  if (filtered.length > 1) {
+    if (filtered.join(' ').length < 16) {
+      return filtered.join(' ');
+    }
+    return (
+      filtered
+        .map((word) => {
+          return word[0];
+        })
+        .join('.') + '.'
+    );
+  }
+  return filtered.join(' ');
+};
+
 export {
   numberToMoneyFormat,
   numberToWords,
   numberSuffix,
   dateToWords,
   getTodaysDate,
+  generateAlias,
   padSerial,
 };
