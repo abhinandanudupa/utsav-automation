@@ -4,7 +4,7 @@ import sys
 import argparse
 from dotenv import dotenv_values
 from generators import InvitationGenerator
-from csv_parsing import CSVParser
+from csv_parsing import parse_all_files, parse_report_csv, save_inputs_as_json, save_as_csv
 from pprint import pprint
 config = dotenv_values(".env")
 OPEN_AI_KEY = config["OPEN_AI_KEY"]
@@ -57,14 +57,14 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '--emails',
+        '--outputs',
         help='save the generated replies as emails',
         action=argparse.BooleanOptionalAction,
         default=True
     )
 
     parser.add_argument(
-        '--emails-file',
+        '--output-file',
         help='prompt ChatGPT with the generated prompts',
         default='generated_emails.csv'
     )
@@ -73,12 +73,11 @@ if __name__ == '__main__':
 
     input_folder = arguments['input_folder']
     parsed_input_file = arguments['parsed_json']
-    output_file = arguments['emails_file']
+    output_file = arguments['output_file']
 
-    csv_parser = CSVParser(input_folder, parsed_input_file, output_file)
-    events = csv_parser.parse_all_files_in_folder()
+    events = parse_all_files(input_folder)
     # pprint(events)
-    csv_parser.save_inputs_as_json(events)
+    save_inputs_as_json(parsed_input_file, events)
 
     invites = InvitationGenerator(events, OPEN_AI_KEY)
 
@@ -87,21 +86,23 @@ if __name__ == '__main__':
 
     if arguments['replies']:
         invites.get_replies_for_all_events()
-        if arguments['emails']:
+        if arguments['outputs']:
             invites.generate_formatted_outputs_for_all_events()
+
     # pprint(invites.all_replies)
     # pprint(invites.all_emails)
+
     prompts, replies, emails = invites.zip_n_store_as_dict(
-        convert_prompts=arguments['prompts'],
-        convert_replies=arguments['replies'],
-        convert_emails=arguments['emails']
+        save_prompts=arguments['prompts'],
+        save_replies=arguments['replies'],
+        save_outputs=arguments['outputs']
     )
 
     print("Saving prompts...")
-    csv_parser.save_as_csv(prompts, arguments['prompts_file'])
+    save_as_csv(prompts, arguments['prompts_file'])
 
     print("Saving replies...")
-    csv_parser.save_as_csv(replies, arguments['raw_replies_file'])
+    save_as_csv(replies, arguments['raw_replies_file'])
 
     print("Saving emails...")
-    csv_parser.save_as_csv(emails, arguments['emails_file'])
+    save_as_csv(emails, arguments['output_file'])
