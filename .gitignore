@@ -5,6 +5,7 @@ ChatGPT/.idea
 ChatGPT/Events/
 ChatGPT/Events_Test/
 ChatGPT/*.csv
+ChatGPT/*.json
 
 ChatGPT/Old/
 ChatGPT/__pycache__/
