@@ -4,8 +4,7 @@ from copy import deepcopy
 from abc import ABC, abstractmethod
 import openai
 import traceback
-
-UTSAV_INTRO = "Utsav Intro"
+import time
 
 
 class BaseGenerator(ABC):
@@ -27,7 +26,9 @@ class BaseGenerator(ABC):
                 "content": prompt
             }]
         )
+        time.sleep(20)
         return completion.choices[0].message.content
+        # return F"Reply for {prompt}"
 
     # To be overloaded
     @abstractmethod
@@ -46,7 +47,7 @@ class BaseGenerator(ABC):
         return [prompt]
 
     def get_replies_for_event(self, event, event_prompts):
-        print(F"Prompting ChatGPT for {event['eventName']}")
+        # print(F"Prompting ChatGPT for {event[list(event.keys())[0]]}")
         event_replies = []
         for i, prompt in enumerate(event_prompts):
             try:
@@ -54,16 +55,15 @@ class BaseGenerator(ABC):
                 event_replies.append(reply)
             except:
                 print("Failed to get a reply from ChatGPT!")
-                print(F"""Was requesting for {event['eventName']} and for the judge {event['resourcePerson'][i]}.""")
+                # print(F"""Was requesting for {event[list(event.keys())[0]]} and for the judge {event['resourcePerson'][i]}.""")
                 traceback.print_exc()
 
-        if len(event_replies):
-            print(F"All requests for {event['eventName']} have failed.")
         self.all_replies.append(event_replies)
 
     # To be overloaded
     @abstractmethod
     def generate_formatted_outputs_for_event(self, event, event_replies):
+        UTSAV_INTRO = "Utsav Intro"
         # club_name = event['club']
         # event_name = event['eventName']
         # mode_of_conduction = event["eventMode"]
@@ -77,7 +77,7 @@ class BaseGenerator(ABC):
         event_emails = []
         # INFO: Iterate through the replies to generate emails
         for something in event_replies:
-            email = F"""#### {UTSAV_INTRO} #### {something} """
+            email = F"""#### {something} ####"""
             event_emails.append(email)
         # INFO: Make sure you update the all_emails variable
         self.all_outputs.append(event_emails)
@@ -92,7 +92,7 @@ class BaseGenerator(ABC):
 
     def generate_formatted_outputs_for_all_events(self):
         for event, event_replies in zip(self.event_list, self.all_replies):
-            print(F"Generating emails for {event['eventName']}")
+            print(F"Generating outputs for {event[list(event.keys())[0]]}")
             self.generate_formatted_outputs_for_event(event, event_replies)
 
     @staticmethod
@@ -121,19 +121,20 @@ class BaseGenerator(ABC):
         for event in self.event_list:
             self.event_relevant_data.append(self.get_relevant_data_from_event(event))
 
-    def zip_n_store_as_dict(self, convert_prompts=True, convert_replies=True, convert_emails=True):
-        prompt_data, reply_data, email_data = [], [], []
-        if convert_prompts:
+    @abstractmethod
+    def zip_n_store_as_dict(self, save_prompts=True, save_replies=True, save_outputs=True):
+        prompt_data, reply_data, output_data = [], [], []
+        if save_prompts:
             events_n_prompts = zip(self.event_list, self.all_prompts)
             for i, (event, prompts) in enumerate(events_n_prompts):
                 for prompt in prompts:
                     data = deepcopy(self.event_relevant_data[i])
                     data.update({
-                        "reply": prompt
+                        "prompt": prompt
                     })
                     prompt_data.append(data)
 
-        if convert_replies:
+        if save_replies:
             events_n_replies = zip(self.event_list, self.all_replies)
             for i, (event, replies) in enumerate(events_n_replies):
                 for reply in replies:
@@ -143,25 +144,21 @@ class BaseGenerator(ABC):
                     })
                     reply_data.append(data)
 
-        if convert_emails:
-            events_n_emails = zip(self.event_list, self.all_outputs)
-            for i, (event, emails) in enumerate(events_n_emails):
-                for email, rp_details in zip(emails, event['resourcePerson']):
-                    rp_name = rp_details['name']
-                    rp_role = rp_details['role']
+        if save_outputs:
+            events_n_outputs = zip(self.event_list, self.all_outputs)
+            for i, (event, outputs) in enumerate(events_n_outputs):
+                for output in outputs:
                     data = deepcopy(self.event_relevant_data[i])
                     data.update({
-                        "invitation": email,
-                        "name": rp_name,
-                        "role": rp_role
+                        "output": output,
                     })
-                    email_data.append(data)
-        return prompt_data, reply_data, email_data
+                    output_data.append(data)
+        return prompt_data, reply_data, output_data
 
 
-class InvitationGenerator(BaseGenerator):
+class InvitationGenerator(BaseGenerator, ABC):
     def generate_prompts_for_event(self, event):
-        print(F"Generating prompts for {event['eventName']}")
+        print(F"Generating prompts for {event[list(event.keys())[0]]}")
         club_name = event['club']
         event_name = event['eventName']
         description = event['description']
@@ -199,6 +196,7 @@ These are the requirements:
         self.all_prompts.append(prompts)
 
     def generate_formatted_outputs_for_event(self, event, event_replies):
+        UTSAV_INTRO = "INTRO"
         club_name = event['club']
         event_name = event['eventName']
         mode_of_conduction = event["eventMode"]
@@ -231,7 +229,121 @@ The event will be conducted in {mode_of_conduction} mode from {timings} the {ven
             event_emails.append(email)
         self.all_outputs.append(event_emails)
 
+    def zip_n_store_as_dict(self, save_prompts=True, save_replies=True, save_outputs=True):
+        prompt_data, reply_data, email_data = [], [], []
+        if save_prompts:
+            events_n_prompts = zip(self.event_list, self.all_prompts)
+            for i, (event, prompts) in enumerate(events_n_prompts):
+                for prompt in prompts:
+                    data = deepcopy(self.event_relevant_data[i])
+                    data.update({
+                        "reply": prompt
+                    })
+                    prompt_data.append(data)
 
-class RulesGenerator(BaseGenerator):
+        if save_replies:
+            events_n_replies = zip(self.event_list, self.all_replies)
+            for i, (event, replies) in enumerate(events_n_replies):
+                for reply in replies:
+                    data = deepcopy(self.event_relevant_data[i])
+                    data.update({
+                        "reply": reply
+                    })
+                    reply_data.append(data)
+
+        if save_outputs:
+            events_n_emails = zip(self.event_list, self.all_outputs)
+            for i, (event, emails) in enumerate(events_n_emails):
+                for email, rp_details in zip(emails, event['resourcePerson']):
+                    rp_name = rp_details['name']
+                    rp_role = rp_details['role']
+                    data = deepcopy(self.event_relevant_data[i])
+                    data.update({
+                        "invitation": email,
+                        "name": rp_name,
+                        "role": rp_role
+                    })
+                    email_data.append(data)
+        return prompt_data, reply_data, email_data
+
+
+class ReportsGenerator(BaseGenerator, ABC):
+
     def generate_prompts_for_event(self, event):
-        print(F"Generating prompts for {event['eventName']}")
+        print(F"Generating prompts for {event['Event Name']}")
+        event_name = event['Event Name']
+        description = event['Description of Event']
+        winners = event['Winner(s) and Prize']
+        dates = event['Date(s)']
+        judges = event['Judge(s) and Designation'].split('\n')
+
+        prompt = F"""
+With this description of the competition below:
+Event Name: {event_name}
+
+Description:
+{description}
+
+Judges:
+{judges}
+
+Date: {dates}
+
+Winners and prize:
+{winners}
+
+You are a report writing AI. You task is to write reports about the events conducted in a college cultural fest.
+
+Write a report paragraph that answers these questions:
+What exactly was the event about and its purpose? (3-4 lines)
+How many teams of/ participants took part?
+Where was the event conducted? (ie: venue)
+What were the various rounds and rules in the event and how did the teams progress through these rounds? (5-6 lines)
+How did the event conclude and what was the feedback of the participants? (3-4 lines)
+Who are the winners of the event?
+Who and what were the accomplishments and roles of the judges in the competition?
+
+Make sure that this description is no more than 15 sentences long.
+        """
+        self.all_prompts.append([prompt])
+
+    def generate_formatted_outputs_for_event(self, event, event_replies):
+        self.all_outputs.append([event_replies])
+
+    def get_relevant_data_from_event(self, event_dict):
+        return deepcopy(event_dict)
+
+    def zip_n_store_as_dict(self, save_prompts=True, save_replies=True, save_outputs=True):
+        prompt_data, reply_data, output_data = [], [], []
+        if save_prompts:
+            events_n_prompts = zip(self.event_list, self.all_prompts)
+            for i, (event, prompts) in enumerate(events_n_prompts):
+                for prompt in prompts:
+                    data = deepcopy(self.event_relevant_data[i])
+                    data.update({
+                        "prompt": prompt
+                    })
+                    prompt_data.append(data)
+
+        if save_replies:
+            events_n_replies = zip(self.event_list, self.all_replies)
+            for i, (event, replies) in enumerate(events_n_replies):
+                for reply in replies:
+                    data = deepcopy(self.event_relevant_data[i])
+                    data.update({
+                        "reply": reply
+                    })
+                    reply_data.append(data)
+
+        if save_outputs:
+            events_n_reports = zip(self.event_list, self.all_outputs)
+            for i, (event, reports) in enumerate(events_n_reports):
+                for report in reports:
+                    data = deepcopy(self.event_relevant_data[i])
+                    data.update({
+                        "report": report,
+                    })
+                    output_data.append(data)
+
+        return prompt_data, reply_data, output_data
+
