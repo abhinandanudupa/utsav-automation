@@ -169,7 +169,9 @@ const generateAlias = function (companyFullName) {
   }
 
   const filtered = wordsInName.filter((word) => {
-    return !word.match(/^inc\.?|pte\.?|ltd\.?$/gi);
+    return !word.match(
+      /^inc\.?|pte\.?|ltd\.?|pvt\.?|incorporated|private|limited$/gi
+    );
   });
 
   if (filtered.length > 1) {
