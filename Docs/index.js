@@ -32,8 +32,9 @@ const processFile = async (fileToProcess) => {
 
 const cleanResponses = function (responses) {
   const processed = [];
-  for (const response of responses) {
-    const companyName = response['OFFICIAL Name of the sponsor'];
+  for (let index = 0; index < responses.length; index++) {
+    const response = responses[index];
+    const companyName = response['OFFICIAL Name of the sponsor'].toUpperCase();
     const clubName = response['Club Name'];
     const companyEmail = response['Email ID of the Company'];
     const chosenPackage = response['Package chosen by the company'];
@@ -42,7 +43,10 @@ const cleanResponses = function (responses) {
     const expectedPaymentDate = response['Expected payment date'];
     const nonMonetaryDeliverables = response['Non monetary benefits'];
     const alreadyDrafted = response['MoU drafted?'];
-    const serial = response['MoU Serial'];
+    const serial =
+      response['MoU Serial'].trim().length === 0
+        ? index + 1
+        : response['MoU Serial'].trim();
 
     processed.push({
       companyName,
