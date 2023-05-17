@@ -18,3 +18,10 @@ Docs/.vscode
 
 Docs/sponsorship_packages.js
 Docs/generate_mou.js
+
+VenueLetters/node_modules/
+VenueLetters/*.zip
+
+VenueLetters/*.csv
+VenueLetters/*.docx
+
