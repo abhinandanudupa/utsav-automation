@@ -1,0 +1,17 @@
+{
+  "name": "venue-letters",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "generate": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parse": "^5.3.10",
+    "docx": "^8.0.4"
+  },
+  "type": "module"
+}
