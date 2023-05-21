@@ -268,14 +268,14 @@ The event will be conducted in {mode_of_conduction} mode from {timings} at {venu
         if save_outputs:
             events_n_emails = zip(self.event_list, self.all_outputs)
             for i, (event, emails) in enumerate(events_n_emails):
-                for email, rp_details in zip(emails, event['resourcePerson']):
+                for email, rp_details in zip(emails, self.rp_details.get(event['eventId'], [])):
                     rp_name = rp_details['name']
-                    rp_role = rp_details['role']
+                    desc = rp_details['brief_description']
                     data = deepcopy(self.event_relevant_data[i])
                     data.update({
                         "invitation": email,
                         "name": rp_name,
-                        "role": rp_role
+                        "brief_description": desc
                     })
                     email_data.append(data)
         return prompt_data, reply_data, email_data
