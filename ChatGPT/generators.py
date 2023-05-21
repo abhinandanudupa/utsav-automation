@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-
+import json
 from copy import deepcopy
 from abc import ABC, abstractmethod
 import openai
@@ -157,6 +157,13 @@ class BaseGenerator(ABC):
 
 
 class InvitationGenerator(BaseGenerator, ABC):
+    def __init__(self, event_list, openai_api_key=None, rp_details='parsed_rp_details.json'):
+        super().__init__(event_list, openai_api_key)
+        self.rp_details = {}
+        with open(rp_details, 'r') as f:
+            content = f.read()
+            self.rp_details = json.loads(content)
+
     def generate_prompts_for_event(self, event):
         print(F"Generating prompts for {event[list(event.keys())[0]]}")
         club_name = event['club']
@@ -164,9 +171,10 @@ class InvitationGenerator(BaseGenerator, ABC):
         description = event['description']
         rules = event['rules']
         role = 'Please note that he/she is the judge for the event'
+        event_id = event['eventId'].strip()
 
         prompts = []
-        for judge in event['resourcePerson']:
+        for judge in self.rp_details.get(event_id, []):
             prompt = F"""
 With this description of the competition below:
 Event Name: {event_name}
@@ -177,13 +185,17 @@ Description:
 Rules:
 {rules}
 
+Resource Person:
+{judge['name']}
+Experience:
+{judge['brief_description']}
 
 You are a an invitation letter writing AI. You task is to write emails to judges inviting them to the event mentioned above which is a part of a college cultural fest.
 
 Write the following two paragraphs for a letter:
 Write a very short one sentence introduction to the event above with the given information, conveying the essence of the game.
 
-Follow it up with a short paragraph, addressed to {judge['name']}, {judge['role']}, inviting him/her to judge this competition on behalf of the {club_name} by stating the name, venue, timings with full date of the competition from above. State how her experience as a {judge['role']} will be useful for judging this competition.
+Follow it up with a short paragraph, addressed to {judge['name']}, inviting him/her to judge this competition on behalf of the {club_name} by stating the name, venue, timings with full date of the competition from above. State how her experience as a judge will be useful for judging this competition.
 
 These are the requirements:
 
@@ -202,18 +214,19 @@ These are the requirements:
         mode_of_conduction = event["eventMode"]
         venue = event['venue']
         timings = event['eventDate']
+        event_id = event['eventId'].strip()
         # description = event['description']
         # rules = event['rules']
         # category_info = [("competition", "judge")]
         # role = 'Please note that he/she is the judge for the event'
         coordinators = event['coordinators']
         event_emails = []
-        for judge, reply in zip(event['resourcePerson'], event_replies):
+        for judge, reply in zip(self.rp_details.get(event_id, []), event_replies):
             email = F"""
 #### {UTSAV_INTRO} ####
 
 We are delighted to invite you to judge the event {event_name} on behalf of the club - {club_name}. 
-The event will be conducted in {mode_of_conduction} mode from {timings} the {venue}.
+The event will be conducted in {mode_of_conduction} mode from {timings} at {venue}.
 
 {reply}
 
