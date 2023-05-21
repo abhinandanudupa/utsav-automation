@@ -12,7 +12,6 @@ FIELDS_TO_IGNORE = [
     '__v',
     '_id',
     'createdAt',
-    'eventId',
     'eventParticipation',
     'ieeeRegFee',
     'imageurl',
