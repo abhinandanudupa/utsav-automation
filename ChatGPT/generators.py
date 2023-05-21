@@ -19,16 +19,16 @@ class BaseGenerator(ABC):
 
     @staticmethod
     def prompt_chatgpt(prompt):
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }]
-        )
-        time.sleep(20)
-        return completion.choices[0].message.content
-        # return F"Reply for {prompt}"
+        # completion = openai.ChatCompletion.create(
+        #     model="gpt-3.5-turbo",
+        #     messages=[{
+        #         "role": "user",
+        #         "content": prompt
+        #     }]
+        # )
+        # time.sleep(20)
+        # return completion.choices[0].message.content
+        return F"Reply for {prompt}"
 
     # To be overloaded
     @abstractmethod
@@ -221,11 +221,12 @@ The event will be conducted in {mode_of_conduction} mode from {timings} the {ven
 {coordinators[0]['email']}
 {coordinators[0]['phone']}
 
-
-{coordinators[1]['name']}
-{coordinators[1]['email']}
-{coordinators[1]['phone']}
 """
+
+# {coordinators[1]['name']}
+# {coordinators[1]['email']}
+# {coordinators[1]['phone']}
+# """
             event_emails.append(email)
         self.all_outputs.append(event_emails)
 
