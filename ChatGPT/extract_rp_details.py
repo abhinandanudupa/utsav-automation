@@ -10,12 +10,12 @@ from csv_parsing import (
 import csv
 
 
-def parse_report_csv(report_csv):
+def parse_rp_csv(rp_csv):
     parsed_details = []
     start_off_set = 5
     columns_for_event = 4
     num_events = 3
-    with open(report_csv, "r") as csv_file:
+    with open(rp_csv, "r") as csv_file:
         csv_obj = csv.reader(csv_file)
         headers = []
         for index, row in enumerate(csv_obj):
@@ -26,10 +26,10 @@ def parse_report_csv(report_csv):
             for i in range(num_events):
                 event_offset = start_off_set + (i * columns_for_event)
                 event_data = row[event_offset:event_offset + columns_for_event]
-                parsed_details.append({"eventCode": row[3]})
+                parsed_details.append({"eventCode": row[3].strip()})
                 for field, content in zip(headers, event_data):
                     if len(content.strip()) != 0:
-                        parsed_details[-1].update({field.lower().replace(' ', '_'): content})
+                        parsed_details[-1].update({field.strip().lower().replace(' ', '_'): content})
 
         non_empty_details = []
         for event in parsed_details:
@@ -39,7 +39,7 @@ def parse_report_csv(report_csv):
     return non_empty_details
 
 
-rp_details = parse_report_csv("rp_details.csv")
+rp_details = parse_rp_csv("rp_details.csv")
 pprint(rp_details)
 
 consolidated = {}
@@ -51,5 +51,5 @@ for rp in rp_details:
 
 pprint(consolidated)
 
-save_as_csv(rp_details, 'parsed_rp_details.json')
+save_inputs_as_json('parsed_rp_details.json', consolidated)
 
