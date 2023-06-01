@@ -42,7 +42,7 @@ const cleanResponses = function (responses) {
     const sponsoredAmount = response['Sponsored amount'];
     const expectedPaymentDate = response['Expected payment date'];
     const nonMonetaryDeliverables = response['Non monetary benefits'];
-    const alreadyDrafted = response['MoU drafted?'];
+    const alreadyDrafted = response['Drafted?'];
     const serial =
       response['MoU Serial'].trim().length === 0
         ? index + 1
